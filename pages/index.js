@@ -1,29 +1,31 @@
-import useSWR from 'swr'
+import Link from 'next/link';
+import ALBUMS_QUERY from '../pages/api/ALBUMS_QUERY';
+import { useQuery } from '@apollo/react-hooks';
+import withApollo from './api/withApollo';
 
-const fetcher = (query) =>
-  fetch('/api/graphql', {
-    method: 'POST',
-    headers: {
-      'Content-type': 'application/json',
-    },
-    body: JSON.stringify({ query }),
-  })
-    .then((res) => res.json())
-    .then((json) => json.data)
+const Index = () => {
+  const { loading, data } = useQuery(ALBUMS_QUERY);
 
-export default function Index() {
-  const { data, error } = useSWR('{ users { name } }', fetcher)
+  if (loading || !data) return <p>Carregando...</p>
 
-  if (error) return <div>Failed to load</div>
-  if (!data) return <div>Loading...</div>
-
-  const { users } = data
+  const { albums } = data;
 
   return (
     <div>
-      {users.map((user, i) => (
-        <div key={i}>{user.name}</div>
-      ))}
+      <header>
+        <Link href="/about">
+          <a>about</a>
+        </Link>
+      </header>
+      <div>
+        {
+          albums.map(album => (
+            <h2>{album.name}</h2>
+          ))
+        }
+      </div>
     </div>
   )
 }
+
+export default withApollo(Index);
